@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Dashboard - กลุ่มการพยาบาลสถาบันบำราศนราดูร</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+        }
+        
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-filter {
+            transition: all 0.2s ease;
+        }
+        
+        .category-filter.active {
+            background: #14b8a6;
+            color: white;
+        }
+        
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .icon-option {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .icon-option:hover, .icon-option.selected {
+            border-color: #14b8a6;
+            background: #f0fdfa;
+        }
+        
+        .color-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .color-option:hover, .color-option.selected {
+            border-color: #374151;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-hospital text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Digital Dashboard</h1>
+                        <p class="text-teal-100 text-sm">กลุ่มการพยาบาลสถาบันบำราศนราดูร</p>
+                    </div>
+                </div>
+                <button onclick="openAddModal()" class="text-white hover:text-teal-200 transition-colors" title="เพิ่มเมนูใหม่">
+                    <i class="fas fa-plus-circle text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+
+
+        <!-- Menu Grid by Categories -->
+        <div id="menuGrid" class="space-y-8 mb-12">
+            <!-- Menu categories will be loaded here -->
+        </div>
+
+        <!-- Problem Report Table -->
+        <div class="card rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
+                    รายงานปัญหาในเวรตรวจการ
+                </h2>
+                <button onclick="openProblemModal()" class="bg-yellow-500 text-white w-10 h-10 rounded-full hover:bg-yellow-600 transition-colors flex items-center justify-center" title="เพิ่มรายงานปัญหา">
+                    <i class="fas fa-plus text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Problem Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse bg-white rounded-xl overflow-hidden shadow-lg">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-mint-400 to-mint-500 text-black" style="background: linear-gradient(to right, #a7f3d0, #86efac);">
+                            <th class="px-2 md:px-4 py-4 text-left font-semibold text-xs md:text-sm" style="width: 50%">เรื่อง</th>
+                            <th class="px-2 md:px-4 py-4 text-center font-semibold text-xs md:text-sm" style="width: 20%">ความคืบหน้า</th>
+                            <th class="px-2 md:px-4 py-4 text-left font-semibold text-xs md:text-sm" style="width: 20%">หมายเหตุ</th>
+                            <th class="px-2 md:px-4 py-4 text-center font-semibold text-xs md:text-sm" style="width: 10%">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="problemTableBody">
+                        <!-- Problem data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading State for Problems -->
+            <div id="problemLoadingState" class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-2xl text-yellow-500 mb-2"></i>
+                <p class="text-gray-600">กำลังโหลดรายงานปัญหา...</p>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-12">
+            <i class="fas fa-spinner fa-spin text-4xl text-teal-500 mb-4"></i>
+            <p class="text-gray-600">กำลังโหลดข้อมูล...</p>
+        </div>
+    </main>
+
+    <!-- Problem Report Modal -->
+    <div id="problemModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="problemModalTitle" class="text-2xl font-bold text-gray-800">เพิ่มรายงานปัญหาใหม่</h2>
+                <button onclick="closeProblemModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="problemForm" class="space-y-6">
+                <input type="hidden" id="problemRowIndex" value="">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ID</label>
+                    <input type="text" id="problemId" readonly class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" placeholder="จะถูกสร้างอัตโนมัติ">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">เรื่อง</label>
+                    <input type="text" id="problemSubject" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รายละเอียด</label>
+                    <textarea id="problemDetails" required rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ความคืบหน้า (%)</label>
+                    <input type="number" id="problemProgress" min="0" max="100" value="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
+                    <textarea id="problemNotes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"></textarea>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeProblemModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
+                        บันทึก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Problem Details Modal -->
+    <div id="problemDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">รายละเอียดปัญหา</h2>
+                <button onclick="closeProblemDetailsModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="problemDetailsContent" class="space-y-4">
+                <!-- Problem details will be loaded here -->
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeProblemDetailsModal()" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Menu Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="card rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">เพิ่มเมนูใหม่</h2>
+                <button onclick="closeAddModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="addMenuForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเมนู</label>
+                    <input type="text" id="menuName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ลิงค์</label>
+                    <input type="url" id="menuLink" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ประเภท</label>
+                    <select id="menuCategory" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        <option value="">เลือกประเภท</option>
+                        <option value="ตัวชี้วัด (KPI)">ตัวชี้วัด (KPI)</option>
+                        <option value="แนวทางปฏิบัติงาน (WI - Work Instruction / SOP / Flowchart)">แนวทางปฏิบัติงาน (WI - Work Instruction / SOP / Flowchart)</option>
+                        <option value="แผนคุณภาพ (QP - Quality Plan / CQI / KM)">แผนคุณภาพ (QP - Quality Plan / CQI / KM)</option>
+                        <option value="งานคุณภาพทางการพยาบาล">งานคุณภาพทางการพยาบาล</option>
+                        <option value="การพัฒนาศักยภาพบุคลากร">การพัฒนาศักยภาพบุคลากร</option>
+                        <option value="ทรัพยากร/สิ่งแวดล้อม">ทรัพยากร/สิ่งแวดล้อม</option>
+                        <option value="แผนงาน/กิจกรรม/ประชุม">แผนงาน/กิจกรรม/ประชุม</option>
+                        <option value="รายงานผลการนิเทศ">รายงานผลการนิเทศ</option>
+                        <option value="เอกสารอื่น ๆ ที่เกี่ยวข้อง">เอกสารอื่น ๆ ที่เกี่ยวข้อง</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">เลือกไอคอน</label>
+                    <div class="icon-selector" id="iconSelector">
+                        <!-- Medical icons will be populated here -->
+                    </div>
+                    <input type="hidden" id="selectedIcon" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">เลือกสี</label>
+                    <div class="color-selector" id="colorSelector">
+                        <!-- Color options will be populated here -->
+                    </div>
+                    <input type="hidden" id="selectedColor" required>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeAddModal()" class="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="flex-1 px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+                        บันทึก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdp3PD6sXuq2ST0dh5yvsn863o6k0rb7YpK7tL9u386uYtSa9w7hCmqJ672PWzdbyV/exec';
+        const PROBLEM_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5tddOAs-jIdRN5Vma1xQ3vDjF1qpMGflA32Wy0K3Xi27pCi2i1oSvaAfpVdF99Qzv/exec';
+        
+        // Medical icons (50 icons)
+        const medicalIcons = [
+            'fas fa-user-md', 'fas fa-stethoscope', 'fas fa-heartbeat', 'fas fa-pills', 'fas fa-syringe',
+            'fas fa-thermometer', 'fas fa-band-aid', 'fas fa-hospital', 'fas fa-ambulance', 'fas fa-first-aid',
+            'fas fa-tooth', 'fas fa-eye', 'fas fa-brain', 'fas fa-lungs', 'fas fa-heart',
+            'fas fa-bone', 'fas fa-dna', 'fas fa-microscope', 'fas fa-x-ray', 'fas fa-wheelchair',
+            'fas fa-bed', 'fas fa-clipboard-list', 'fas fa-chart-line', 'fas fa-calendar-check', 'fas fa-file-medical',
+            'fas fa-notes-medical', 'fas fa-prescription-bottle', 'fas fa-weight', 'fas fa-tint', 'fas fa-shield-alt',
+            'fas fa-hand-holding-heart', 'fas fa-procedures', 'fas fa-user-nurse', 'fas fa-briefcase-medical', 'fas fa-hospital-user',
+            'fas fa-clinic-medical', 'fas fa-comment-medical', 'fas fa-laptop-medical', 'fas fa-file-prescription', 'fas fa-mortar-pestle',
+            'fas fa-smoking-ban', 'fas fa-tablets', 'fas fa-capsules', 'fas fa-vial', 'fas fa-flask',
+            'fas fa-bacteria', 'fas fa-virus', 'fas fa-head-side-mask', 'fas fa-hand-sparkles', 'fas fa-pump-medical'
+        ];
+
+        // Color options (20 colors)
+        const colorOptions = [
+            '#14b8a6', '#06b6d4', '#3b82f6', '#8b5cf6', '#a855f7',
+            '#d946ef', '#ec4899', '#f43f5e', '#ef4444', '#f97316',
+            '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981',
+            '#059669', '#0891b2', '#0284c7', '#2563eb', '#7c3aed'
+        ];
+
+        let menuData = [];
+        let problemData = [];
+        let editingMenuIndex = -1;
+        
+        // Category icons mapping
+        const categoryIcons = {
+            'ตัวชี้วัด (KPI)': 'fas fa-chart-line',
+            'แนวทางปฏิบัติงาน (WI - Work Instruction / SOP / Flowchart)': 'fas fa-clipboard-list',
+            'แผนคุณภาพ (QP - Quality Plan / CQI / KM)': 'fas fa-award',
+            'งานคุณภาพทางการพยาบาล': 'fas fa-user-nurse',
+            'การพัฒนาศักยภาพบุคลากร': 'fas fa-graduation-cap',
+            'ทรัพยากร/สิ่งแวดล้อม': 'fas fa-leaf',
+            'แผนงาน/กิจกรรม/ประชุม': 'fas fa-calendar-alt',
+            'รายงานผลการนิเทศ': 'fas fa-file-alt',
+            'เอกสารอื่น ๆ ที่เกี่ยวข้อง': 'fas fa-folder'
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMenuData();
+            loadProblemData();
+            setupIconSelector();
+            setupColorSelector();
+            setupForm();
+            setupProblemForm();
+        });
+
+        // Load menu data from Google Sheets
+        function loadMenuData() {
+            const script = document.createElement('script');
+            script.onerror = function() {
+                console.error('Failed to load menu data script');
+                document.getElementById('loadingState').style.display = 'none';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+                });
+            };
+            script.src = `${SCRIPT_URL}?callback=handleMenuData&action=getData&sheetName=DB&_=${Date.now()}`;
+            document.head.appendChild(script);
+        }
+
+        // Handle JSONP callback
+        function handleMenuData(response) {
+            if (response.success) {
+                menuData = response.data || [];
+                renderMenuGrid();
+            } else {
+                console.error('Error loading data:', response.error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถโหลดข้อมูลได้: ' + response.error
+                });
+            }
+            document.getElementById('loadingState').style.display = 'none';
+        }
+
+        // Render menu grid by categories
+        function renderMenuGrid() {
+            const grid = document.getElementById('menuGrid');
+            
+            // Group data by category
+            const groupedData = {};
+            menuData.forEach(item => {
+                const category = item.ประเภท || 'เอกสารอื่น ๆ ที่เกี่ยวข้อง';
+                if (!groupedData[category]) {
+                    groupedData[category] = [];
+                }
+                groupedData[category].push(item);
+            });
+            
+            // Render each category
+            grid.innerHTML = Object.keys(groupedData).map(category => {
+                const items = groupedData[category];
+                const categoryIcon = categoryIcons[category] || 'fas fa-folder';
+                
+                return `
+                    <div class="category-section">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center text-white mr-3">
+                                <i class="${categoryIcon}"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-800">${category}</h2>
+                            <div class="flex-1 h-px bg-gray-300 ml-4"></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            ${items.map(item => `
+                                <div class="menu-item card rounded-xl p-4 text-center relative group">
+                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                                        <button onclick="editMenuItem(${menuData.indexOf(item)})" class="w-6 h-6 bg-blue-500 text-white rounded-full text-xs hover:bg-blue-600" title="แก้ไข">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button onclick="deleteMenuItem(${menuData.indexOf(item)})" class="w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600" title="ลบ">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div onclick="openLink('${item.Link}')" class="cursor-pointer">
+                                        <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center text-lg text-white" style="background-color: ${item.สี}">
+                                            <i class="${item.icon}"></i>
+                                        </div>
+                                        <h3 class="font-medium text-gray-800 text-sm leading-tight">${item['Menu Name']}</h3>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+
+        // Open link
+        function openLink(url) {
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        // Setup icon selector
+        function setupIconSelector() {
+            const selector = document.getElementById('iconSelector');
+            selector.innerHTML = medicalIcons.map(icon => `
+                <div class="icon-option" onclick="selectIcon('${icon}', this)">
+                    <i class="${icon} text-xl text-gray-600"></i>
+                </div>
+            `).join('');
+        }
+
+        // Setup color selector
+        function setupColorSelector() {
+            const selector = document.getElementById('colorSelector');
+            selector.innerHTML = colorOptions.map(color => `
+                <div class="color-option" style="background-color: ${color}" onclick="selectColor('${color}', this)"></div>
+            `).join('');
+        }
+
+        // Select icon
+        function selectIcon(icon, element) {
+            document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedIcon').value = icon;
+        }
+
+        // Select color
+        function selectColor(color, element) {
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedColor').value = color;
+        }
+
+        // Setup form
+        function setupForm() {
+            document.getElementById('addMenuForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveMenu();
+            });
+        }
+
+        // Save menu
+        function saveMenu() {
+            const isEditing = editingMenuIndex !== -1;
+            
+            const formData = {
+                'Menu Name': document.getElementById('menuName').value,
+                'Link': document.getElementById('menuLink').value,
+                'icon': document.getElementById('selectedIcon').value,
+                'สี': document.getElementById('selectedColor').value,
+                'ประเภท': document.getElementById('menuCategory').value
+            };
+
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Send data via JSONP
+            const script = document.createElement('script');
+            const callbackName = 'saveCallback_' + Date.now();
+            
+            window[callbackName] = function(response) {
+                document.head.removeChild(script);
+                delete window[callbackName];
+                
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'บันทึกสำเร็จ!',
+                        text: isEditing ? 'เมนูถูกแก้ไขเรียบร้อยแล้ว' : 'เมนูใหม่ถูกเพิ่มเรียบร้อยแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    closeAddModal();
+                    loadMenuData(); // Reload data
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: response.error || 'ไม่สามารถบันทึกข้อมูลได้'
+                    });
+                }
+            };
+
+            let params;
+            if (isEditing) {
+                params = new URLSearchParams({
+                    action: 'updateData',
+                    callback: callbackName,
+                    sheetName: 'DB',
+                    rowIndex: editingMenuIndex + 2, // +2 because of header row and 0-based index
+                    data: JSON.stringify(formData)
+                });
+            } else {
+                params = new URLSearchParams({
+                    action: 'addData',
+                    callback: callbackName,
+                    sheetName: 'DB',
+                    data: JSON.stringify(formData)
+                });
+            }
+
+            script.src = `${SCRIPT_URL}?${params.toString()}`;
+            document.head.appendChild(script);
+        }
+
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            
+            // Reset form
+            document.getElementById('addMenuForm').reset();
+            document.querySelectorAll('.icon-option, .color-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('selectedIcon').value = '';
+            document.getElementById('selectedColor').value = '';
+            editingMenuIndex = -1; // Reset editing index
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddModal();
+            }
+        });
+
+        // Menu Edit and Delete Functions
+        function editMenuItem(index) {
+            editingMenuIndex = index;
+            const item = menuData[index];
+            
+            document.getElementById('menuName').value = item['Menu Name'];
+            document.getElementById('menuLink').value = item.Link;
+            document.getElementById('menuCategory').value = item.ประเภท;
+            document.getElementById('selectedIcon').value = item.icon;
+            document.getElementById('selectedColor').value = item.สี;
+            
+            // Select the icon and color visually
+            document.querySelectorAll('.icon-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.querySelector('i').className === item.icon) {
+                    opt.classList.add('selected');
+                }
+            });
+            
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.style.backgroundColor === item.สี) {
+                    opt.classList.add('selected');
+                }
+            });
+            
+            openAddModal();
+        }
+
+        function deleteMenuItem(index) {
+            const item = menuData[index];
+            
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: `คุณต้องการลบเมนู "${item['Menu Name']}" หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'กำลังลบ...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const script = document.createElement('script');
+                    const callbackName = 'deleteCallback_' + Date.now();
+                    
+                    window[callbackName] = function(response) {
+                        document.head.removeChild(script);
+                        delete window[callbackName];
+                        
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'ลบสำเร็จ!',
+                                text: 'เมนูถูกลบเรียบร้อยแล้ว',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            
+                            loadMenuData(); // Reload data
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: response.error || 'ไม่สามารถลบข้อมูลได้'
+                            });
+                        }
+                    };
+
+                    const params = new URLSearchParams({
+                        action: 'deleteData',
+                        callback: callbackName,
+                        sheetName: 'DB',
+                        rowIndex: index + 2 // +2 because of header row and 0-based index
+                    });
+
+                    script.src = `${SCRIPT_URL}?${params.toString()}`;
+                    document.head.appendChild(script);
+                }
+            });
+        }
+
+        // Problem Report Functions
+        function loadProblemData() {
+            const script = document.createElement('script');
+            script.onerror = function() {
+                console.error('Failed to load problem data script');
+                document.getElementById('problemLoadingState').style.display = 'none';
+                const tbody = document.getElementById('problemTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-4 py-8 text-center text-red-500 text-sm">
+                            ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้
+                            <br><small class="text-gray-500 mt-2 block">กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง</small>
+                        </td>
+                    </tr>
+                `;
+            };
+            script.src = `${PROBLEM_SCRIPT_URL}?callback=handleProblemData&action=getData&sheetName=รายงานปัญหา&_=${Date.now()}`;
+            document.head.appendChild(script);
+        }
+
+        function handleProblemData(response) {
+            console.log('Raw response:', response);
+            
+            if (response && response.success) {
+                problemData = response.data || [];
+                console.log('Loaded problem data:', problemData);
+                
+                // Log column names and sample data for debugging
+                if (problemData.length > 0) {
+                    console.log('Available columns:', Object.keys(problemData[0]));
+                    console.log('Sample row data:', problemData[0]);
+                    
+                    // Check specifically for ID and progress columns
+                    const firstRow = problemData[0];
+                    console.log('Column check:');
+                    console.log('- ID (Column A):', firstRow['A']);
+                    console.log('- เรื่อง (Column B):', firstRow['B']);
+                    console.log('- Progress (Column C):', firstRow['C']);
+                    console.log('- หมายเหตุ (Column D):', firstRow['D']);
+                    console.log('- รายละเอียด (Column E):', firstRow['E']);
+                }
+                
+                renderProblemTable();
+            } else {
+                console.error('Error loading problem data:', response);
+                const errorMsg = response ? (response.error || 'ไม่ทราบสาเหตุ') : 'ไม่ได้รับข้อมูลตอบกลับ';
+                
+                // Show error message in table
+                const tbody = document.getElementById('problemTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-4 py-8 text-center text-red-500 text-sm">
+                            เกิดข้อผิดพลาดในการโหลดข้อมูล: ${errorMsg}
+                            <br><small class="text-gray-500 mt-2 block">กรุณาตรวจสอบการเชื่อมต่อและลองใหม่อีกครั้ง</small>
+                        </td>
+                    </tr>
+                `;
+            }
+            document.getElementById('problemLoadingState').style.display = 'none';
+        }
+
+        function renderProblemTable() {
+            const tbody = document.getElementById('problemTableBody');
+            
+            if (problemData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-4 py-8 text-center text-gray-500 text-sm">
+                            ไม่มีรายงานปัญหา
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = problemData.map((item, index) => {
+                // Get ID from column A
+                const itemId = item['A'] || item['ID'] || item['id'] || (index + 1);
+                
+                // Get subject from column B
+                const subject = item['B'] || item['เรื่อง'] || item['Subject'] || '';
+                
+                // Get progress from column C
+                const progressValue = item['C'] || 
+                                    item['ความคืบหน้าในการแก้ไข(แสดงเป็นเปอร์เซนต์)'] || 
+                                    item['ความคืบหน้า'] || 
+                                    item['Progress'] || 
+                                    item['progress'] || 
+                                    0;
+                
+                // Get notes from column D
+                const notes = item['D'] || item['หมายเหตุ'] || item['Notes'] || '-';
+                
+                // Get details from column E
+                const details = item['E'] || item['รายละเอียด'] || item['Details'] || '';
+                
+                console.log(`Item ${index}:`, {
+                    id: itemId,
+                    subject: subject,
+                    progress: progressValue,
+                    notes: notes,
+                    details: details
+                });
+                
+                // Handle different number formats: 8.00, 8%, "8", etc.
+                let progress = 0;
+                if (progressValue !== undefined && progressValue !== null && progressValue !== '') {
+                    let stringValue = progressValue.toString().trim();
+                    
+                    // Handle percentage format (e.g., "8%" or "0.08" as decimal)
+                    if (stringValue.includes('%')) {
+                        stringValue = stringValue.replace('%', '');
+                    } else if (parseFloat(stringValue) <= 1 && parseFloat(stringValue) > 0) {
+                        // If value is between 0 and 1, treat as decimal percentage
+                        stringValue = (parseFloat(stringValue) * 100).toString();
+                    }
+                    
+                    const cleanValue = stringValue.replace(',', '.');
+                    const parsedValue = parseFloat(cleanValue);
+                    progress = isNaN(parsedValue) ? 0 : Math.min(100, Math.max(0, Math.round(parsedValue)));
+                }
+                
+                console.log('Calculated progress for item', index, ':', progress);
+                
+                const progressColor = progress < 30 ? 'bg-red-500' : progress < 70 ? 'bg-yellow-500' : 'bg-green-500';
+                
+                // Truncate subject if too long
+                const truncatedSubject = subject.length > 60 ? subject.substring(0, 60) + '...' : subject;
+                
+                // Truncate notes if too long
+                const truncatedNotes = notes.length > 30 ? notes.substring(0, 30) + '...' : notes;
+                
+                return `
+                    <tr class="hover:bg-mint-50 transition-colors border-b border-gray-100" style="background-color: rgba(167, 243, 208, 0.1);">
+                        <td class="px-2 md:px-4 py-3 text-xs md:text-sm text-black" style="width: 50%">
+                            <div class="truncate" title="${subject}">${truncatedSubject}</div>
+                        </td>
+                        <td class="px-2 md:px-4 py-3 text-center" style="width: 20%">
+                            <div class="w-full bg-gray-200 rounded-full h-4 md:h-5 relative">
+                                <div class="${progressColor} h-4 md:h-5 rounded-full flex items-center justify-center text-black text-xs font-medium transition-all" style="width: ${progress}%">
+                                    <span class="hidden md:inline">${progress}%</span>
+                                    <span class="md:hidden text-xs">${progress}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-2 md:px-4 py-3 text-xs md:text-sm text-black" style="width: 20%">
+                            <div class="truncate" title="${notes}">${truncatedNotes}</div>
+                        </td>
+                        <td class="px-2 md:px-4 py-3 text-center" style="width: 10%">
+                            <div class="flex justify-center space-x-1">
+                                <button onclick="viewProblemDetails(${index})" class="w-6 h-6 md:w-7 md:h-7 bg-blue-500 text-white rounded-full text-xs hover:bg-blue-600 transition-colors" title="ดูรายละเอียด">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="editProblem(${index})" class="w-6 h-6 md:w-7 md:h-7 bg-green-500 text-white rounded-full text-xs hover:bg-green-600 transition-colors" title="แก้ไข">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteProblem(${index})" class="w-6 h-6 md:w-7 md:h-7 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition-colors" title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function viewProblemDetails(index) {
+            const item = problemData[index];
+            
+            // Get data from proper columns
+            const itemId = item['A'] || item['ID'] || item['id'] || (index + 1);
+            const subject = item['B'] || item['เรื่อง'] || item['Subject'] || '';
+            const progressValue = item['C'] || 
+                                item['ความคืบหน้าในการแก้ไข(แสดงเป็นเปอร์เซนต์)'] || 
+                                item['ความคืบหน้า'] || 
+                                item['Progress'] || 
+                                item['progress'] || 
+                                0;
+            const notes = item['D'] || item['หมายเหตุ'] || item['Notes'] || 'ไม่มีหมายเหตุ';
+            const details = item['E'] || item['รายละเอียด'] || item['Details'] || '';
+            
+            let progress = 0;
+            if (progressValue !== undefined && progressValue !== null && progressValue !== '') {
+                let stringValue = progressValue.toString().trim();
+                
+                if (stringValue.includes('%')) {
+                    stringValue = stringValue.replace('%', '');
+                } else if (parseFloat(stringValue) <= 1 && parseFloat(stringValue) > 0) {
+                    stringValue = (parseFloat(stringValue) * 100).toString();
+                }
+                
+                const cleanValue = stringValue.replace(',', '.');
+                const parsedValue = parseFloat(cleanValue);
+                progress = isNaN(parsedValue) ? 0 : Math.min(100, Math.max(0, Math.round(parsedValue)));
+            }
+            const progressColor = progress < 30 ? 'bg-red-500' : progress < 70 ? 'bg-yellow-500' : 'bg-green-500';
+            
+            document.getElementById('problemDetailsContent').innerHTML = `
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">ID:</h3>
+                    <p class="text-gray-600 mb-4">${itemId}</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">เรื่อง:</h3>
+                    <p class="text-gray-600 mb-4">${subject}</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">รายละเอียด:</h3>
+                    <p class="text-gray-600 mb-4 whitespace-pre-wrap">${details}</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">ความคืบหน้าในการแก้ไข:</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-8 relative mb-4">
+                        <div class="${progressColor} h-8 rounded-full flex items-center justify-center text-black font-medium" style="width: ${progress}%">
+                            ${progress}%
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">หมายเหตุ:</h3>
+                    <p class="text-gray-600 whitespace-pre-wrap">${notes}</p>
+                </div>
+            `;
+            
+            document.getElementById('problemDetailsModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function editProblem(index) {
+            const item = problemData[index];
+            
+            // Get data from proper columns
+            const itemId = item['A'] || item['ID'] || item['id'] || (index + 1);
+            const subject = item['B'] || item['เรื่อง'] || item['Subject'] || '';
+            const progressValue = item['C'] || 
+                                item['ความคืบหน้าในการแก้ไข(แสดงเป็นเปอร์เซนต์)'] || 
+                                item['ความคืบหน้า'] || 
+                                item['Progress'] || 
+                                item['progress'] || 
+                                0;
+            const notes = item['D'] || item['หมายเหตุ'] || item['Notes'] || '';
+            const details = item['E'] || item['รายละเอียด'] || item['Details'] || '';
+            
+            let progress = 0;
+            if (progressValue !== undefined && progressValue !== null && progressValue !== '') {
+                let stringValue = progressValue.toString().trim();
+                
+                if (stringValue.includes('%')) {
+                    stringValue = stringValue.replace('%', '');
+                } else if (parseFloat(stringValue) <= 1 && parseFloat(stringValue) > 0) {
+                    stringValue = (parseFloat(stringValue) * 100).toString();
+                }
+                
+                const cleanValue = stringValue.replace(',', '.');
+                const parsedValue = parseFloat(cleanValue);
+                progress = isNaN(parsedValue) ? 0 : Math.min(100, Math.max(0, Math.round(parsedValue)));
+            }
+            
+            document.getElementById('problemRowIndex').value = index;
+            document.getElementById('problemId').value = itemId;
+            document.getElementById('problemSubject').value = subject;
+            document.getElementById('problemDetails').value = details;
+            document.getElementById('problemProgress').value = progress;
+            document.getElementById('problemNotes').value = notes;
+            
+            document.getElementById('problemModalTitle').textContent = 'แก้ไขรายงานปัญหา';
+            
+            openProblemModal();
+        }
+
+        function deleteProblem(index) {
+            const item = problemData[index];
+            
+            Swal.fire({
+                title: 'ยืนยันการลบ',
+                text: `คุณต้องการลบรายงานปัญหา "${item.เรื่อง}" หรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'กำลังลบ...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const script = document.createElement('script');
+                    const callbackName = 'deleteProblemCallback_' + Date.now();
+                    
+                    window[callbackName] = function(response) {
+                        document.head.removeChild(script);
+                        delete window[callbackName];
+                        
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'ลบสำเร็จ!',
+                                text: 'รายงานปัญหาถูกลบเรียบร้อยแล้ว',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            
+                            loadProblemData(); // Reload data
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: response.error || 'ไม่สามารถลบข้อมูลได้'
+                            });
+                        }
+                    };
+
+                    const params = new URLSearchParams({
+                        action: 'deleteData',
+                        callback: callbackName,
+                        sheetName: 'รายงานปัญหา',
+                        rowIndex: index + 2 // +2 because of header row and 0-based index
+                    });
+
+                    script.src = `${PROBLEM_SCRIPT_URL}?${params.toString()}`;
+                    document.head.appendChild(script);
+                }
+            });
+        }
+
+        function setupProblemForm() {
+            document.getElementById('problemForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveProblem();
+            });
+        }
+
+        function saveProblem() {
+            const rowIndex = document.getElementById('problemRowIndex').value;
+            const isEditing = rowIndex !== '';
+            
+            // Generate ID for new entries (use timestamp + random for uniqueness)
+            const newId = isEditing ? problemData[rowIndex]['A'] || problemData[rowIndex]['ID'] || (parseInt(rowIndex) + 1) : 
+                         Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
+            
+            const formData = {
+                'A': newId, // Column A - ID
+                'B': document.getElementById('problemSubject').value, // Column B - เรื่อง
+                'C': document.getElementById('problemProgress').value, // Column C - ความคืบหน้า
+                'D': document.getElementById('problemNotes').value, // Column D - หมายเหตุ
+                'E': document.getElementById('problemDetails').value, // Column E - รายละเอียด
+                // Also include Thai headers for compatibility
+                'ID': newId,
+                'เรื่อง': document.getElementById('problemSubject').value,
+                'ความคืบหน้าในการแก้ไข(แสดงเป็นเปอร์เซนต์)': document.getElementById('problemProgress').value,
+                'หมายเหตุ': document.getElementById('problemNotes').value,
+                'รายละเอียด': document.getElementById('problemDetails').value
+            };
+
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const script = document.createElement('script');
+            const callbackName = 'saveProblemCallback_' + Date.now();
+            
+            window[callbackName] = function(response) {
+                document.head.removeChild(script);
+                delete window[callbackName];
+                
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'บันทึกสำเร็จ!',
+                        text: isEditing ? 'รายงานปัญหาถูกแก้ไขเรียบร้อยแล้ว' : 'รายงานปัญหาใหม่ถูกเพิ่มเรียบร้อยแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    closeProblemModal();
+                    loadProblemData(); // Reload data
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: response.error || 'ไม่สามารถบันทึกข้อมูลได้'
+                    });
+                }
+            };
+
+            let params;
+            if (isEditing) {
+                params = new URLSearchParams({
+                    action: 'updateData',
+                    callback: callbackName,
+                    sheetName: 'รายงานปัญหา',
+                    rowIndex: parseInt(rowIndex) + 2, // +2 because of header row and 0-based index
+                    data: JSON.stringify(formData)
+                });
+            } else {
+                params = new URLSearchParams({
+                    action: 'addData',
+                    callback: callbackName,
+                    sheetName: 'รายงานปัญหา',
+                    data: JSON.stringify(formData)
+                });
+            }
+
+            script.src = `${PROBLEM_SCRIPT_URL}?${params.toString()}`;
+            document.head.appendChild(script);
+        }
+
+        // Problem Modal Functions
+        function openProblemModal() {
+            document.getElementById('problemModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProblemModal() {
+            document.getElementById('problemModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            
+            // Reset form
+            document.getElementById('problemForm').reset();
+            document.getElementById('problemRowIndex').value = '';
+            document.getElementById('problemId').value = '';
+            document.getElementById('problemModalTitle').textContent = 'เพิ่มรายงานปัญหาใหม่';
+        }
+
+        function closeProblemDetailsModal() {
+            document.getElementById('problemDetailsModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+
+
+        // Close modals when clicking outside
+        document.getElementById('problemModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProblemModal();
+            }
+        });
+
+        document.getElementById('problemDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProblemDetailsModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9622bf3585d345ca',t:'MTc1MzAxNzUzMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
